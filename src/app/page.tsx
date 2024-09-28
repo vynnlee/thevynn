@@ -34,7 +34,7 @@ export default function Home() {
           link="/"
           rotation={0}
         />
-        {/* 필요에 따라 더 많은 DraggableCard 컴포넌트를 추가하세요 */}
+       
       </main>
     </CardProvider>
   );

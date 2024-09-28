@@ -209,7 +209,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       ref={cardRef}
       style={{
         transform: `translate(${position.x}px, ${position.y}px) scale(${
-          isDragging ? 1.05 : isHovering ? 1.075 : 1
+          isDragging ? 1.025 : isHovering ? 1.05 : 1
         }) rotate(${rotation}deg)`,
         transition: isDragging
           ? "transform 0.1s cubic-bezier(0.25, 0.1, 0.25, 1)"
