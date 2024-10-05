@@ -9,14 +9,30 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mdx-js/loader": "^3.0.1",
+    "@mdx-js/react": "^3.0.1",
+    "@next/mdx": "^14.2.14",
     "@react-spring/web": "^9.7.4",
+    "@types/glob": "^8.1.0",
+    "@types/mdx": "^2.0.13",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "fs": "^0.0.1-security",
+    "glob": "^11.0.0",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.446.0",
     "next": "14.2.13",
+    "next-mdx-remote": "^5.0.0",
     "react": "^18",
     "react-dom": "^18",
     "react-draggable": "^4.4.6",
     "react-moveable": "^0.56.0",
-    "smooth-corners": "^1.0.8"
+    "remark": "^15.0.1",
+    "remark-html": "^16.0.1",
+    "remark-images": "^4.1.0",
+    "smooth-corners": "^1.0.8",
+    "tailwind-merge": "^2.5.3",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20",

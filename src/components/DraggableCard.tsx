@@ -1,7 +1,13 @@
 // src/components/DraggableCard.tsx
 "use client";
 
-import React, { useState, useRef, useEffect, useContext, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useContext,
+  useCallback,
+} from "react";
 import { useRouter } from "next/navigation";
 import { CardContext } from "@/contexts/CardContext";
 
@@ -30,6 +36,40 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   const router = useRouter();
   const { bringToFront } = useContext(CardContext);
 
+  // Refs and state for boundaries
+  const parentRef = useRef<HTMLElement | null>(null);
+  const [parentBounds, setParentBounds] = useState<DOMRect | null>(null);
+  const [cardBounds, setCardBounds] = useState<DOMRect | null>(null);
+
+  // Helper function to clamp values
+  const clamp = (value: number, min: number, max: number): number => {
+    return Math.min(Math.max(value, min), max);
+  };
+
+  // Set the parentRef and bounds after mount
+  useEffect(() => {
+    if (cardRef.current && cardRef.current.parentElement) {
+      parentRef.current = cardRef.current.parentElement;
+      setParentBounds(parentRef.current.getBoundingClientRect());
+      setCardBounds(cardRef.current.getBoundingClientRect());
+    }
+
+    // Update bounds on window resize
+    const handleResize = () => {
+      if (parentRef.current) {
+        setParentBounds(parentRef.current.getBoundingClientRect());
+      }
+      if (cardRef.current) {
+        setCardBounds(cardRef.current.getBoundingClientRect());
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   // 카드 활성화: 맨 앞으로 이동
   const activateCard = useCallback(() => {
     const newZIndex = bringToFront();
@@ -41,30 +81,51 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
     (e: React.MouseEvent<HTMLDivElement>) => {
       activateCard();
       setIsDragging(true);
-      setOffset({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y,
-      });
+
+      if (parentRef.current) {
+        const parentRect = parentRef.current.getBoundingClientRect();
+        const mouseX = e.clientX - parentRect.left;
+        const mouseY = e.clientY - parentRect.top;
+
+        setOffset({
+          x: mouseX - position.x,
+          y: mouseY - position.y,
+        });
+      }
     },
     [activateCard, position.x, position.y]
   );
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      if (isDragging) {
+      if (isDragging && parentBounds && cardBounds) {
         if (requestRef.current) {
           cancelAnimationFrame(requestRef.current);
         }
 
         requestRef.current = requestAnimationFrame(() => {
+          const parentRect = parentRef.current!.getBoundingClientRect();
+          let newX = e.clientX - parentRect.left - offset.x;
+          let newY = e.clientY - parentRect.top - offset.y;
+
+          // Define the boundaries
+          const minX = 0;
+          const minY = 0;
+          const maxX = parentBounds.width - cardBounds.width;
+          const maxY = parentBounds.height - cardBounds.height;
+
+          // Clamp the positions
+          newX = clamp(newX, minX, maxX);
+          newY = clamp(newY, minY, maxY);
+
           setPosition({
-            x: e.clientX - offset.x,
-            y: e.clientY - offset.y,
+            x: newX,
+            y: newY,
           });
         });
       }
     },
-    [isDragging, offset.x, offset.y]
+    [isDragging, offset.x, offset.y, parentBounds, cardBounds, clamp]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -80,31 +141,56 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       activateCard();
       const touch = e.touches[0];
       setIsDragging(true);
-      setOffset({
-        x: touch.clientX - position.x,
-        y: touch.clientY - position.y,
-      });
+
+      if (parentRef.current) {
+        const parentRect = parentRef.current.getBoundingClientRect();
+        const touchX = touch.clientX - parentRect.left;
+        const touchY = touch.clientY - parentRect.top;
+
+        setOffset({
+          x: touchX - position.x,
+          y: touchY - position.y,
+        });
+      }
+
+      e.preventDefault(); // 기본 터치 동작 방지
     },
     [activateCard, position.x, position.y]
   );
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
-      if (isDragging) {
+      if (isDragging && parentBounds && cardBounds) {
+        e.preventDefault(); // 기본 터치 동작 방지
+
         if (requestRef.current) {
           cancelAnimationFrame(requestRef.current);
         }
 
         requestRef.current = requestAnimationFrame(() => {
           const touch = e.touches[0];
+          const parentRect = parentRef.current!.getBoundingClientRect();
+          let newX = touch.clientX - parentRect.left - offset.x;
+          let newY = touch.clientY - parentRect.top - offset.y;
+
+          // Define the boundaries
+          const minX = 0;
+          const minY = 0;
+          const maxX = parentBounds.width - cardBounds.width;
+          const maxY = parentBounds.height - cardBounds.height;
+
+          // Clamp the positions
+          newX = clamp(newX, minX, maxX);
+          newY = clamp(newY, minY, maxY);
+
           setPosition({
-            x: touch.clientX - offset.x,
-            y: touch.clientY - offset.y,
+            x: newX,
+            y: newY,
           });
         });
       }
     },
-    [isDragging, offset.x, offset.y]
+    [isDragging, offset.x, offset.y, parentBounds, cardBounds, clamp]
   );
 
   const handleTouchEnd = useCallback(() => {
@@ -147,19 +233,35 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
           return; // 나머지 키는 무시
       }
 
+      // Define the boundaries for keyboard movement
+      if (parentBounds && cardBounds) {
+        const minX = 0;
+        const minY = 0;
+        const maxX = parentBounds.width - cardBounds.width;
+        const maxY = parentBounds.height - cardBounds.height;
+
+        newX = clamp(newX, minX, maxX);
+        newY = clamp(newY, minY, maxY);
+      }
+
       setPosition({ x: newX, y: newY });
       e.preventDefault();
     },
-    [position.x, position.y]
+    [position.x, position.y, parentBounds, cardBounds, clamp]
   );
 
   // 클릭 및 리플 효과 핸들러
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const ripple = document.createElement("span");
-      const size = Math.max(e.currentTarget.clientWidth, e.currentTarget.clientHeight);
-      const left = e.clientX - e.currentTarget.getBoundingClientRect().left - size / 2;
-      const top = e.clientY - e.currentTarget.getBoundingClientRect().top - size / 2;
+      const size = Math.max(
+        e.currentTarget.clientWidth,
+        e.currentTarget.clientHeight
+      );
+      const left =
+        e.clientX - e.currentTarget.getBoundingClientRect().left - size / 2;
+      const top =
+        e.clientY - e.currentTarget.getBoundingClientRect().top - size / 2;
 
       ripple.style.width = ripple.style.height = `${size}px`;
       ripple.style.left = `${left}px`;
@@ -186,7 +288,9 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
     if (isDragging) {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
-      document.addEventListener("touchmove", handleTouchMove);
+      document.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
       document.addEventListener("touchend", handleTouchEnd);
     } else {
       document.removeEventListener("mousemove", handleMouseMove);
@@ -202,18 +306,26 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
+  }, [
+    isDragging,
+    handleMouseMove,
+    handleMouseUp,
+    handleTouchMove,
+    handleTouchEnd,
+  ]);
 
   return (
     <div
       ref={cardRef}
       style={{
-        transform: `translate(${position.x}px, ${position.y}px) scale(${
+        transform: `translate3d(${position.x}px, ${
+          position.y
+        }px, 0) rotate(${rotation}deg) scale(${
           isDragging ? 1.025 : isHovering ? 1.05 : 1
-        }) rotate(${rotation}deg)`,
+        })`,
         transition: isDragging
-          ? "transform 0.1s cubic-bezier(0.25, 0.1, 0.25, 1)"
-          : "transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)",
+          ? "none" // 드래그 중에는 트랜지션 비활성화
+          : `transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)`,
         boxShadow: isDragging
           ? "0 20px 50px rgba(0, 0, 0, 0.1)"
           : isHovering
@@ -221,8 +333,10 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
           : "0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05)",
         zIndex: currentZIndex,
         cursor: isDragging ? "grabbing" : "grab",
+        position: "absolute", // 부모 요소를 기준으로 절대 위치 설정
+        touchAction: "none", // 터치 동작 방지
       }}
-      className="absolute rounded-xl overflow-hidden focus:outline-none"
+      className="rounded-xl overflow-hidden focus:outline-none"
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -233,7 +347,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       role="button" // 접근성 향상을 위한 역할 정의
       aria-pressed={isDragging} // ARIA 속성으로 드래그 상태 표시
     >
-      <div className="flex flex-col p-1 bg-neutral-900/25 backdrop-blur-md cursor-move select-none relative overflow-hidden">
+      <div className="flex flex-col p-1 bg-neutral-900/25 backdrop-blur-xl border border-white/15 cursor-move select-none relative overflow-hidden transition-transform duration-200">
         <div className="flex flex-row gap-2 justify-between">
           <p className="px-2 pt-1 pb-2 font-geistMono font-regular text-sm text-white/90 tracking-wide">
             {title}
@@ -244,7 +358,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         </div>
         {/* Thumbnail 설정 */}
         <div
-          className="w-[240px] h-[240px] rounded-lg bg-white/15 w-full"
+          className="w-[240px] h-[240px] rounded-lg bg-white/15"
           style={{
             backgroundImage: `url(${thumbnailUrl})`,
             backgroundSize: "cover",
