@@ -1,19 +1,27 @@
 import { getAllPosts } from "@/utils/getPosts";
 import Link from "next/link";
 
-export default function BlogListPage() {
+export default function Lab() {
   const posts = getAllPosts();
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-4">Blog</h1>
+    <main className="mx-auto w-full flex-1 p-8 relative h-screen bg-gray-100 overflow-hidden">
+      <h1 className="font-geist text-lg font-medium text-neutral-900 mb-2">
+        Laboratory
+      </h1>
+      <p className="font-geist text-md font-regular text-neutral-700 mb-4">
+        Analyze and explore UI design and interaction design in detail.
+      </p>
       <ul>
         {posts.map((post) => (
-          <li key={post.slug}>
+          <li
+            key={post.slug}
+            className="font-geist text-lg font-regular text-neutral-800"
+          >
             <Link href={`/lab/${post.slug}`}>{post.title}</Link>
           </li>
         ))}
       </ul>
-    </div>
+    </main>
   );
 }

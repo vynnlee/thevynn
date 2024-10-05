@@ -15,7 +15,7 @@ const Dock = () => {
   const router = useRouter();
 
   const handleItemsMouseEnter = (itemIndex: number) => {
-    const expandSize = 8;
+    const expandSize = 6;
     const buttonElements = dockButtonsWrapper.current
       ?.children as HTMLCollectionOf<HTMLButtonElement>;
 
@@ -66,7 +66,18 @@ const Dock = () => {
     }
   };
 
-  const handleButtonClick = (href: string) => {
+  const handleButtonClick = (href: string, index: number) => {
+    const button = dockButtonsWrapper.current?.children[
+      index
+    ] as HTMLButtonElement;
+
+    if (button) {
+      button.classList.add("bounce-animation");
+      setTimeout(() => {
+        button.classList.remove("bounce-animation");
+      }, 500); // 애니메이션 지속 시간 후 제거
+    }
+
     router.push(href);
   };
 
@@ -81,7 +92,7 @@ const Dock = () => {
           className="w-16 align-bottom dock-item relative flex flex-col items-center group transition-[width] duration-200 ease"
           onMouseEnter={() => handleItemsMouseEnter(i)}
           onMouseLeave={() => handleItemsMouseLeave(i)}
-          onClick={() => handleButtonClick(item.href)}
+          onClick={() => handleButtonClick(item.href, i)}
           aria-label={item.title} // Accessibility improvement
         >
           <Image
