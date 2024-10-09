@@ -2,6 +2,7 @@
 
 import React from 'react';
 import DraggableCard from '@/components/DraggableCard';
+import ChatBubble from '@/components/ChatBubble/ChatBubble';
 import { CardProvider } from '@/contexts/CardContext';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -16,7 +17,7 @@ export default function Home() {
       animate="animate"
       exit="exit"
     >
-      <div className="max-w-[480px] flex flex-col gap-4">
+      <div className="max-w-[400px] flex flex-col gap-4">
         <motion.div variants={childVariants} className="flex flex-row gap-3 items-center">
           <Image
             src="/images/profile.jpg"
@@ -31,11 +32,11 @@ export default function Home() {
           </div>
         </motion.div>
         <motion.div variants={childVariants} className="w-full">
-          <p className="font-geist font-regular text-md">
-            I&apos;m a professional UX/UI and interface designer. <br /> Passionate about details, striving for
-            authentic communications.
+          <p className="font-geist font-regular text-neutral-700 text-md">
+            I&apos;m a professional UX/UI and interface designer. Passionate about details, striving for sincere
+            communications.
           </p>
-          <p className="font-geist font-regular text-md mt-2">
+          <p className="font-geist font-regular text-neutral-700 text-md mt-2">
             Currently studying at{' '}
             <a
               href="https://id.seoultech.ac.kr/"
@@ -47,6 +48,9 @@ export default function Home() {
             </a>
             .
           </p>
+        </motion.div>
+        <motion.div variants={childVariants} className="w-full">
+          <ChatBubble message="Hey there! What's up" isSender={true} />
         </motion.div>
       </div>
       <CardProvider>
