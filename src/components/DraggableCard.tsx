@@ -1,15 +1,11 @@
 // src/components/DraggableCard.tsx
-"use client";
+'use client';
 
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useContext,
-  useCallback,
-} from "react";
-import { useRouter } from "next/navigation";
-import { CardContext } from "@/contexts/CardContext";
+import React, { useState, useRef, useEffect, useContext, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { CardContext } from '@/contexts/CardContext';
+import { LucideIcon } from '@/lib/lucide-icon';
 
 interface DraggableCardProps {
   title: string;
@@ -17,6 +13,7 @@ interface DraggableCardProps {
   thumbnailUrl: string;
   link: string;
   rotation?: number; // 2D 회전 각도 (deg)
+  initialPosition?: { x: number; y: number }; // 초기 위치
 }
 
 const DraggableCard: React.FC<DraggableCardProps> = ({
@@ -25,9 +22,10 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   thumbnailUrl,
   link,
   rotation = 0,
+  initialPosition = { x: 100, y: 100 }, // 기본값 설정
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: 100, y: 100 }); // 초기 위치
+  const [position, setPosition] = useState(initialPosition); // 초기 위치를 prop에서 설정
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [currentZIndex, setCurrentZIndex] = useState(1);
@@ -64,9 +62,9 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       }
     };
 
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -93,7 +91,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         });
       }
     },
-    [activateCard, position.x, position.y]
+    [activateCard, position.x, position.y],
   );
 
   const handleMouseMove = useCallback(
@@ -125,7 +123,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         });
       }
     },
-    [isDragging, offset.x, offset.y, parentBounds, cardBounds, clamp]
+    [isDragging, offset.x, offset.y, parentBounds, cardBounds, clamp],
   );
 
   const handleMouseUp = useCallback(() => {
@@ -135,7 +133,6 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
     }
   }, []);
 
-  // 터치 이벤트 핸들러
   const handleTouchStart = useCallback(
     (e: React.TouchEvent<HTMLDivElement>) => {
       activateCard();
@@ -153,15 +150,15 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         });
       }
 
-      e.preventDefault(); // 기본 터치 동작 방지
+      e.preventDefault();
     },
-    [activateCard, position.x, position.y]
+    [activateCard, position.x, position.y],
   );
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
       if (isDragging && parentBounds && cardBounds) {
-        e.preventDefault(); // 기본 터치 동작 방지
+        e.preventDefault();
 
         if (requestRef.current) {
           cancelAnimationFrame(requestRef.current);
@@ -190,7 +187,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         });
       }
     },
-    [isDragging, offset.x, offset.y, parentBounds, cardBounds, clamp]
+    [isDragging, offset.x, offset.y, parentBounds, cardBounds, clamp],
   );
 
   const handleTouchEnd = useCallback(() => {
@@ -200,73 +197,17 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
     }
   }, []);
 
-  // 호버 이벤트 핸들러
-  const handleMouseEnter = useCallback(() => {
-    setIsHovering(true);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    setIsHovering(false);
-  }, []);
-
-  // 키보드 이벤트 핸들러 (접근성)
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const step = 10; // 이동할 픽셀 수
-      let newX = position.x;
-      let newY = position.y;
-
-      switch (e.key) {
-        case "ArrowUp":
-          newY -= step;
-          break;
-        case "ArrowDown":
-          newY += step;
-          break;
-        case "ArrowLeft":
-          newX -= step;
-          break;
-        case "ArrowRight":
-          newX += step;
-          break;
-        default:
-          return; // 나머지 키는 무시
-      }
-
-      // Define the boundaries for keyboard movement
-      if (parentBounds && cardBounds) {
-        const minX = 0;
-        const minY = 0;
-        const maxX = parentBounds.width - cardBounds.width;
-        const maxY = parentBounds.height - cardBounds.height;
-
-        newX = clamp(newX, minX, maxX);
-        newY = clamp(newY, minY, maxY);
-      }
-
-      setPosition({ x: newX, y: newY });
-      e.preventDefault();
-    },
-    [position.x, position.y, parentBounds, cardBounds, clamp]
-  );
-
-  // 클릭 및 리플 효과 핸들러
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      const ripple = document.createElement("span");
-      const size = Math.max(
-        e.currentTarget.clientWidth,
-        e.currentTarget.clientHeight
-      );
-      const left =
-        e.clientX - e.currentTarget.getBoundingClientRect().left - size / 2;
-      const top =
-        e.clientY - e.currentTarget.getBoundingClientRect().top - size / 2;
+      const ripple = document.createElement('span');
+      const size = Math.max(e.currentTarget.clientWidth, e.currentTarget.clientHeight);
+      const left = e.clientX - e.currentTarget.getBoundingClientRect().left - size / 2;
+      const top = e.clientY - e.currentTarget.getBoundingClientRect().top - size / 2;
 
       ripple.style.width = ripple.style.height = `${size}px`;
       ripple.style.left = `${left}px`;
       ripple.style.top = `${top}px`;
-      ripple.className = "ripple";
+      ripple.className = 'ripple';
 
       const card = e.currentTarget;
       card.appendChild(ripple);
@@ -275,113 +216,92 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         ripple.remove();
       }, 600);
 
-      // Ripple 효과 후 링크로 이동
       setTimeout(() => {
         router.push(link);
       }, 300);
     },
-    [router, link]
+    [router, link],
   );
 
-  // 드래그 시 이벤트 리스너 추가
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      document.addEventListener("touchmove", handleTouchMove, {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove, {
         passive: false,
       });
-      document.addEventListener("touchend", handleTouchEnd);
+      document.addEventListener('touchend', handleTouchEnd);
     } else {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
     }
 
-    // 컴포넌트 언마운트 시 리스너 정리
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [
-    isDragging,
-    handleMouseMove,
-    handleMouseUp,
-    handleTouchMove,
-    handleTouchEnd,
-  ]);
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   return (
     <div
       ref={cardRef}
       style={{
-        transform: `translate3d(${position.x}px, ${
-          position.y
-        }px, 0) rotate(${rotation}deg) scale(${
+        transform: `translate3d(${position.x}px, ${position.y}px, 0) rotate(${rotation}deg) scale(${
           isDragging ? 1.025 : isHovering ? 1.05 : 1
         })`,
         transition: isDragging
-          ? "none" // 드래그 중에는 트랜지션 비활성화
+          ? 'none'
           : `transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)`,
         boxShadow: isDragging
-          ? "0 20px 50px rgba(0, 0, 0, 0.1)"
+          ? '0 20px 50px rgba(0, 0, 0, 0.1)'
           : isHovering
-          ? "0 10px 30px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1)"
-          : "0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05)",
+            ? '0 10px 30px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1)'
+            : '0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05)',
         zIndex: currentZIndex,
-        cursor: isDragging ? "grabbing" : "grab",
-        position: "absolute", // 부모 요소를 기준으로 절대 위치 설정
-        touchAction: "none", // 터치 동작 방지
+        cursor: isDragging ? 'grabbing' : 'grab',
+        position: 'absolute',
+        touchAction: 'none',
       }}
       className="rounded-xl overflow-hidden focus:outline-none"
       onMouseDown={handleMouseDown}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
       onTouchStart={handleTouchStart}
-      onKeyDown={handleKeyDown}
+      onKeyDown={e => {
+        if (e.key === 'Enter') handleClick(e as any);
+      }}
       onClick={handleClick}
-      tabIndex={0} // 키보드 포커스 가능하게 설정
-      role="button" // 접근성 향상을 위한 역할 정의
-      aria-pressed={isDragging} // ARIA 속성으로 드래그 상태 표시
+      tabIndex={0}
+      role="button"
+      aria-pressed={isDragging}
     >
-      <div className="flex flex-col p-1 bg-neutral-900/25 backdrop-blur-xl border border-white/15 cursor-move select-none relative overflow-hidden transition-transform duration-200">
-        <div className="flex flex-row gap-2 justify-between">
-          <p className="px-2 pt-1 pb-2 font-geistMono font-regular text-sm text-white/90 tracking-wide">
-            {title}
-          </p>
-          <p className="px-2 pt-1 pb-2 font-geistMono font-light text-sm text-white/50 tracking-wide">
-            {date}
-          </p>
+      <div className="group flex flex-col p-1 bg-neutral-900/25 backdrop-blur-xl rounded-xl border border-white/25 cursor-move select-none relative overflow-hidden transition-transform duration-200">
+        <div className="flex flex-row items-center gap-2 px-1 pb-1 justify-between">
+          <div className="flex flex-row gap-1 items-center">
+            <p className="font-geist font-regular text-xs text-white/90 tracking-wide">{title}</p>
+            <LucideIcon
+              name="ArrowRight"
+              className="size-3 text-white group-hover:translate-x-1 transition-all duration-200 ease-in-out"
+            />
+          </div>
+          <p className="font-geistMono font-regular text-xs text-white/50 tracking-wide">{date}</p>
         </div>
-        {/* Thumbnail 설정 */}
-        <div
-          className="w-[240px] h-[240px] rounded-lg bg-white/15"
-          style={{
-            backgroundImage: `url(${thumbnailUrl})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        ></div>
-        {/* Ripple Effect */}
-        <style jsx>{`
-          .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0);
-            animation: ripple 0.6s linear;
-          }
-
-          @keyframes ripple {
-            to {
-              transform: scale(4);
-              opacity: 0;
-            }
-          }
-        `}</style>
+        {/* Thumbnail 설정 - Next.js Image 컴포넌트 사용 */}
+        <div className="w-[192px] h-[256px] rounded-md bg-white/15 relative pointer-events-none overflow-hidden">
+          <Image
+            src={thumbnailUrl}
+            alt={`${title} thumbnail`}
+            layout="fill"
+            objectFit="cover"
+            quality={75}
+            priority={true}
+            className="pointer-events-none"
+          />
+        </div>
       </div>
     </div>
   );
