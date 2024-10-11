@@ -251,7 +251,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       ref={cardRef}
       style={{
         transform: `translate3d(${position.x}px, ${position.y}px, 0) rotate(${rotation}deg) scale(${
-          isDragging ? 1.025 : isHovering ? 1.05 : 1
+          isDragging ? 1.025 : isHovering ? 1.035 : 1
         })`,
         transition: isDragging
           ? 'none'
@@ -259,7 +259,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         boxShadow: isDragging
           ? '0 20px 50px rgba(0, 0, 0, 0.1)'
           : isHovering
-            ? '0 10px 30px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1)'
+            ? '0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.075)'
             : '0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05)',
         zIndex: currentZIndex,
         cursor: isDragging ? 'grabbing' : 'grab',
@@ -279,7 +279,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       role="button"
       aria-pressed={isDragging}
     >
-      <div className="group flex flex-col p-1 bg-neutral-900/25 backdrop-blur-xl rounded-xl border border-white/25 cursor-move select-none relative overflow-hidden transition-transform duration-200">
+      <div className="group flex flex-col p-1 bg-neutral-900/25 backdrop-blur-xl rounded-xl border border-white/15 cursor-move select-none relative overflow-hidden transition-transform duration-200">
         <div className="flex flex-row items-center gap-2 px-1 pb-1 justify-between">
           <div className="flex flex-row gap-1 items-center">
             <p className="font-geist font-regular text-xs text-white/90 tracking-wide">{title}</p>

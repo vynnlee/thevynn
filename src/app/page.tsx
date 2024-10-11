@@ -1,17 +1,20 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
+
+import { motion } from 'framer-motion';
+import { containerVariants, childVariants } from '@/animations';
+
 import DraggableCard from '@/components/DraggableCard';
 import ChatBubble from '@/components/ChatBubble/ChatBubble';
 import { CardProvider } from '@/contexts/CardContext';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { containerVariants, childVariants } from '@/animations';
+import ProjectCard from '@/components/ProjectCard/ProjectCard';
 
 export default function Home() {
   return (
     <motion.div
-      className="mx-auto w-full flex-1 p-8 relative h-screen bg-gray-100 overflow-hidden"
+      className="mx-auto w-full flex flex-row p-8 relative h-screen bg-gray-100 overflow-hidden"
       variants={containerVariants}
       initial="initial"
       animate="animate"
@@ -49,44 +52,63 @@ export default function Home() {
             .
           </p>
         </motion.div>
+        <motion.div variants={childVariants} className="w-full flex flex-col">
+          <h3 className="font-geist font-medium text-neutral-700 text-md mb-2">Side Projects</h3>
+          <div className="flex flex-row gap-2 overflow-hidden w-full">
+            <ProjectCard
+              title="OpenTypo"
+              date="241024"
+              thumbnailUrl="/images/logo_opentypo.svg"
+              link="/"
+            />
+            <ProjectCard
+              title="Synapse"
+              date="250101"
+              thumbnailUrl="/images/logo_opentypo.svg"
+              link="/"
+            />
+          </div>
+        </motion.div>
         <motion.div variants={childVariants} className="w-full">
-          <ChatBubble message="Hey there! What's up" isSender={true} />
+          <ChatBubble label="Frantz" message="Hey there! What's up" isSender={true} />
         </motion.div>
       </div>
-      <CardProvider>
-        <DraggableCard
-          title="MDR Golf"
-          date="230107"
-          thumbnailUrl="/images/thumbnails/portfolio-mdr.png"
-          link="/"
-          initialPosition={{ x: 50, y: 48 }}
-          rotation={-10}
-        />
-        <DraggableCard
-          title="Metaverse"
-          date="240216"
-          thumbnailUrl="/images/thumbnails/portfolio-meta.png"
-          link="/"
-          initialPosition={{ x: 50, y: 48 }}
-          rotation={-5}
-        />
-        <DraggableCard
-          title="LCD Display"
-          date="230523"
-          thumbnailUrl="/images/thumbnails/portfolio-purespace.png"
-          link="/"
-          initialPosition={{ x: 50, y: 48 }}
-          rotation={5}
-        />
-        <DraggableCard
-          title="BetaProduct"
-          date="240801"
-          thumbnailUrl="/images/thumbnails/portfolio-beta.png"
-          link="/"
-          initialPosition={{ x: 50, y: 48 }}
-          rotation={0}
-        />
-      </CardProvider>
+      <div className="flex-1">
+        <CardProvider>
+          <DraggableCard
+            title="MDR Golf"
+            date="230107"
+            thumbnailUrl="/images/thumbnails/portfolio-mdr.png"
+            link="/"
+            initialPosition={{ x: 50, y: 48 }}
+            rotation={-10}
+          />
+          <DraggableCard
+            title="Metaverse"
+            date="240216"
+            thumbnailUrl="/images/thumbnails/portfolio-meta.png"
+            link="/"
+            initialPosition={{ x: 50, y: 48 }}
+            rotation={-5}
+          />
+          <DraggableCard
+            title="LCD Display"
+            date="230523"
+            thumbnailUrl="/images/thumbnails/portfolio-purespace.png"
+            link="/"
+            initialPosition={{ x: 50, y: 48 }}
+            rotation={5}
+          />
+          <DraggableCard
+            title="BetaProduct"
+            date="240801"
+            thumbnailUrl="/images/thumbnails/portfolio-beta.png"
+            link="/"
+            initialPosition={{ x: 50, y: 48 }}
+            rotation={0}
+          />
+        </CardProvider>
+      </div>
     </motion.div>
   );
 }

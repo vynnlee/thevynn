@@ -1,14 +1,14 @@
-import createMDX from "@next/mdx";
+import createMDX from '@next/mdx';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
+  pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   images: {
-    domains: ["placehold.co"],
+    domains: ['www.google.com'],
   },
   reactStrictMode: true,
   webpack5: true,
-  webpack: (config) => {
+  webpack: config => {
     config.resolve.fallback = { fs: false };
 
     return config;
