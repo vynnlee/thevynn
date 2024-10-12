@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 
 import HomeLogo from "./images/Home.png";
 import LabLogo from "./images/Lab.png";
+import LibraryLogo from "./images/Library.png";
 
 const dockButtons = [
   { title: "Home", logo: HomeLogo, href: "/" },
   { title: "Lab", logo: LabLogo, href: "/lab" },
+  { title: "Library", logo: LibraryLogo, href: "/library" },
 ];
 
 const Dock = () => {
@@ -84,7 +86,7 @@ const Dock = () => {
   return (
     <div
       ref={dockButtonsWrapper}
-      className="z-50 flex h-16 flex-row justify-center items-end bg-neutral-900/5 backdrop-blur-md border border-white/15 fixed bottom-4 left-0 right-0 px-2 bg-opacity-10 w-max m-auto rounded-xl"
+      className="z-50 flex h-16 flex-row justify-center items-end bg-neutral-900/5 backdrop-blur-lg border border-white/15 fixed bottom-4 left-0 right-0 px-2 bg-opacity-10 w-max m-auto rounded-xl"
     >
       {dockButtons.map((item, i) => (
         <button
@@ -103,7 +105,7 @@ const Dock = () => {
             height={512}
           />
           {/* Tooltip */}
-          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-[-10px] bg-black bg-opacity-40 backdrop-blur-lg text-white text-sm px-3 py-1 rounded-full opacity-0 invisible transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-[-15px] font-geistMono pointer-events-none">
+          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-[-10px] bg-black bg-opacity-40 backdrop-blur-lg text-white text-sm px-3 py-1 rounded-full opacity-0 invisible transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-[-15px] font-geist pointer-events-none">
             {item.title}
           </span>
         </button>

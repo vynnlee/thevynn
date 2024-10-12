@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { LucideIcon } from '@/lib/lucide-icon';
+import { useState, useEffect, useRef } from 'react';
 
 interface ProjectCardProps {
   title: string;
@@ -16,9 +16,34 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   thumbnailUrl,
   link,
 }) => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLDivElement>(null);
+
+  // Mouse move event handler
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = imageRef.current?.getBoundingClientRect();
+    if (rect) {
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      setMousePos({ x, y });
+    }
+  };
+
+  // Reset the image position when mouse leaves
+  const handleMouseLeave = () => {
+    setMousePos({ x: 0, y: 0 });
+  };
+
   return (
-    <div className="size-[10rem] group flex flex-col p-1 bg-white backdrop-blur-xl rounded-xl border border-neutral-200">
-      <div className="size-full flex items-center justify-center rounded-md bg-neutral-100 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] relative pointer-events-none overflow-hidden">
+    <div
+      className="group flex flex-col p-1 bg-white backdrop-blur-xl rounded-xl border border-neutral-200"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div
+        className="size-[8rem] flex items-center justify-center rounded-md bg-neutral-100/80 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] relative pointer-events-none overflow-hidden"
+        ref={imageRef}
+      >
         <Image
           src={thumbnailUrl}
           alt={`${title} thumbnail`}
@@ -27,7 +52,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           width={520}
           height={520}
           priority={true}
-          className="size-[4rem] pointer-events-none"
+          className="size-[4rem] pointer-events-none drop-shadow-sm"
+          style={{
+            transform: `translate(${mousePos.x * 0.075}px, ${mousePos.y * 0.075}px)`, // Image moves based on mouse position
+            transition: 'transform 200ms ease-out', // Smooth transition
+          }}
         />
       </div>
       <div className="flex flex-row items-center gap-2 px-1 pt-1 pb-0.5 justify-between">
