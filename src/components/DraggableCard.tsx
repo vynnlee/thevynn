@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useContext, useCallback } from 'react';
+import { useCursor } from '@/contexts/CursorContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { CardContext } from '@/contexts/CardContext';
@@ -24,6 +25,8 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   rotation = 0,
   initialPosition = { x: 100, y: 100 }, // 기본값 설정
 }) => {
+  const { setCursorOption } = useCursor();
+
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState(initialPosition); // 초기 위치를 prop에서 설정
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -279,7 +282,8 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       role="button"
       aria-pressed={isDragging}
     >
-      <div className="group flex flex-col p-1 bg-neutral-900/25 backdrop-blur-xl rounded-xl border border-white/15 cursor-move select-none relative overflow-hidden transition-transform duration-200">
+      <div className="group flex flex-col p-1 bg-neutral-900/25 backdrop-blur-xl rounded-xl border border-white/15 cursor-move select-none relative overflow-hidden transition-transform duration-200" onMouseEnter={() => setCursorOption('grab')}
+      onMouseLeave={() => setCursorOption('arrow')}>
         <div className="flex flex-row items-center gap-2 px-1 pb-1 justify-between">
           <div className="flex flex-row gap-1 items-center">
             <p className="font-geist font-regular text-xs text-white/90 tracking-wide">{title}</p>

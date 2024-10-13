@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { useCursor } from '@/contexts/CursorContext';
 
 import { motion } from 'framer-motion';
 import { containerVariants, childVariants } from '@/animations';
@@ -11,7 +12,11 @@ import ChatBubble from '@/components/ChatBubble/ChatBubble';
 import { CardProvider } from '@/contexts/CardContext';
 import ProjectCard from '@/components/ProjectCard/ProjectCard';
 
+import InteractiveElements from '../components/InteractiveElements';
+
 export default function Home() {
+  const { setCursorOption } = useCursor();
+
   return (
     <motion.div
       className="mx-auto w-full flex flex-col lg:flex-row p-6 lg:p-8 relative h-screen bg-gray-100 overflow-hidden"
@@ -48,6 +53,8 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-blue-500 transition-color duration-300"
+              onMouseEnter={() => setCursorOption('link')}
+              onMouseLeave={() => setCursorOption('arrow')}
             >
               SNUST
             </a>
@@ -73,6 +80,8 @@ export default function Home() {
               dragElastic={0.05} // Slightly elastic drag effect
               whileTap={{ cursor: "grabbing" }}
               style={{ cursor: 'grab' }} // Ensures the cursor changes on hover
+              onMouseEnter={() => setCursorOption('grab')}
+              onMouseLeave={() => setCursorOption('arrow')}
             >
               <ProjectCard
                 title="OpenTypo"
@@ -94,6 +103,47 @@ export default function Home() {
               />
             </motion.div>
           </div>
+        </motion.div>
+
+        <InteractiveElements />
+
+        <motion.div variants={childVariants}>
+          <h3 className="font-geist font-medium text-neutral-600 text-md mb-3">Connect</h3>
+          <p className="font-geist font-regular text-neutral-600 text-md">
+            Follow me on{' '}
+            <a
+              href="https://x.com/0x7dec"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-500 transition-color duration-300"
+              onMouseEnter={() => setCursorOption('pointer')}
+              onMouseLeave={() => setCursorOption('arrow')}
+            >
+              X
+            </a>
+            {' '}and{' '}
+            <a
+              href="https://x.com/0x7dec"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-500 transition-color duration-300"
+              onMouseEnter={() => setCursorOption('pointer')}
+              onMouseLeave={() => setCursorOption('arrow')}
+            >
+              Thread
+            </a>
+            {' '}or email me directly{' '}
+            <a
+              href="mailto:thevynn.studio@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-500 transition-color duration-300"
+              onMouseEnter={() => setCursorOption('pointer')}
+              onMouseLeave={() => setCursorOption('arrow')}
+            >
+              thevynn.studio@gmail.com
+            </a>
+          </p>
         </motion.div>
 
         {/* <motion.div variants={childVariants} className="w-full">

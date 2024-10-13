@@ -17,6 +17,7 @@
     "@types/glob": "^8.1.0",
     "@types/lodash": "^4.17.10",
     "@types/mdx": "^2.0.13",
+    "animejs": "^3.2.2",
     "axios": "^1.7.7",
     "book-cover-3d": "^1.1.2",
     "cheerio": "^1.0.0",
@@ -46,6 +47,7 @@
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
     "remark-images": "^4.1.0",
+    "sharp": "^0.33.5",
     "smooth-corners": "^1.0.8",
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7"

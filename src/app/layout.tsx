@@ -7,6 +7,10 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
+import DynamicCursor from '../components/DynamicCursor/DynamicCursor';
+import { CursorProvider } from '../contexts/CursorContext';
+import { easeCubicInOut } from '@/utils/easing';
+
 import Dock from '@/components/Dock/Dock';
 
 const geistSans = localFont({
@@ -45,19 +49,25 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} overflow-hidden antialiased bg-white dark:bg-neutral-900`}
       >
-        <div className="pointer-events-none fixed left-0 top-0 z-50 h-16 w-full bg-neutral-100 to-transparent backdrop-blur-xl [-webkit-mask-image:linear-gradient(to_bottom,black,transparent)] dark:bg-neutral-900"></div>
-        <motion.div
-          key={pathname} // 페이지 변경 시 트랜지션
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          variants={transitionVariants}
-          transition={{ duration: 0.6, ease: [0, 0, 0, 1] }} // 유려한 애니메이션 곡선
-          style={{ overflow: 'hidden' }}
-        >
-          {isReady && children}
-        </motion.div>
-        <Dock />
+        <CursorProvider>
+          <DynamicCursor
+            size={24} // 커서 크기 설정
+            fillColor="white" // SVG의 fill 색상 설정
+          />
+          <div className="pointer-events-none fixed left-0 top-0 z-50 h-16 w-full bg-neutral-100 to-transparent backdrop-blur-xl [-webkit-mask-image:linear-gradient(to_bottom,black,transparent)] dark:bg-neutral-900"></div>
+          <motion.div
+            key={pathname} // 페이지 변경 시 트랜지션
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={transitionVariants}
+            transition={{ duration: 0.6, ease: [0, 0, 0, 1] }} // 유려한 애니메이션 곡선
+            style={{ overflow: 'hidden' }}
+          >
+            {isReady && children}
+          </motion.div>
+          <Dock />
+        </CursorProvider>
       </body>
     </html>
   );
