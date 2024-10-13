@@ -5,6 +5,7 @@ import { useCursor } from '@/contexts/CursorContext'
 import { interpolate } from 'flubber'
 import { cursorPaths } from './cursors/paths'
 import { motion, AnimatePresence } from 'framer-motion'
+import { LucideIcon } from '@/lib/lucide-icon';
 
 type CursorOption = 'arrow' | 'grab' | 'move' | 'pointer' | 'zoomIn' | 'zoomOut' | 'link'
 
@@ -22,9 +23,8 @@ const DynamicCursor: React.FC<DynamicCursorProps> = ({
   backdropBlur = '0px',
 }) => {
   const { cursorOption } = useCursor()
-  const cursorRef = useRef<SVGSVGElement>(null)
+  const cursorWrapperRef = useRef<HTMLDivElement>(null)
   const pathRef = useRef<SVGPathElement>(null)
-  const chipRef = useRef<HTMLDivElement>(null)
   const [currentPath, setCurrentPath] = useState<string>(cursorPaths['arrow'])
   const [nextPath, setNextPath] = useState<string>(cursorPaths['arrow'])
   const animationRef = useRef<number>()
@@ -48,7 +48,7 @@ const DynamicCursor: React.FC<DynamicCursorProps> = ({
     if (currentPath === nextPath) return
 
     const interpolatePath = interpolate(currentPath, nextPath, { maxSegmentLength: 2 })
-    const duration = 25
+    const duration = 10
     const start = performance.now()
 
     const animate = (time: number) => {
@@ -79,15 +79,10 @@ const DynamicCursor: React.FC<DynamicCursorProps> = ({
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (cursorRef.current) {
+      if (cursorWrapperRef.current) {
         const x = e.clientX
         const y = e.clientY
-
-        cursorRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`
-
-        if (chipRef.current) {
-          chipRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`
-        }
+        cursorWrapperRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`
       }
     }
 
@@ -96,27 +91,38 @@ const DynamicCursor: React.FC<DynamicCursorProps> = ({
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
     }
-  }, [size])
+  }, [])
 
   return (
-    <>
+    <div
+      ref={cursorWrapperRef}
+      className="pointer-events-none overflow-visible fixed top-0 left-0 z-50 flex items-center justify-center will-change-transform"
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        transform: 'translate(-50%, -50%)',
+      }}
+    >
       <svg
-        ref={cursorRef}
-        className="pointer-events-none fixed top-0 left-0 z-50 will-change-transform"
         width={size}
         height={size}
         viewBox="0 0 16 16"
         xmlns="http://www.w3.org/2000/svg"
         style={{
           mixBlendMode: 'difference',
-          opacity: 0.7,
+          opacity: 1,
           transform: 'translate(-50%, -50%)',
         }}
+        stroke="white"
+        strokeWidth="0.35"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke-Miterlimit="8"
       >
         <path
           ref={pathRef}
           d={currentPath}
-          fill={fillColor}
+          fill="rgb(38 38 38 / 0.9)"
           fillRule="evenodd"
           clipRule="evenodd"
         />
@@ -124,11 +130,13 @@ const DynamicCursor: React.FC<DynamicCursorProps> = ({
       <AnimatePresence>
         {showChip && (
           <motion.div
-            ref={chipRef}
-            className="pointer-events-none fixed top-0 left-0 z-50 flex items-center justify-center rounded-full bg-gray-700/50 text-white backdrop-blur-md will-change-transform"
+            className="overflow-visible absolute flex items-center justify-center rounded-full bg-neutral-800/90 text-white backdrop-blur-md"
+            style={{
+              transform: 'translate(-25%, -50%)',
+            }}
             initial={{
-              width: "8px",
-              height: "8px",
+              width: size,
+              height: size,
               opacity: 0.7,
               mixBlendMode: 'difference' as 'difference',
             }}
@@ -138,22 +146,19 @@ const DynamicCursor: React.FC<DynamicCursorProps> = ({
               opacity: 1,
               mixBlendMode: 'normal' as 'normal',
               transition: {
-                duration: 30,
-                ease: [0.32, 0.72, 0, 1], // Custom easing for Apple-like feel
-              },
-            }}
-            exit={{
-              width: "8px",
-              height: "8px",
-              opacity: 0,
-              mixBlendMode: 'difference' as 'difference',
-              transition: {
-                duration: 2,
+                duration: 0.3,
                 ease: [0.32, 0.72, 0, 1],
               },
             }}
-            style={{
-              transform: 'translate(6px, -6px)',
+            exit={{
+              width: size,
+              height: size,
+              opacity: 0,
+              mixBlendMode: 'difference' as 'difference',
+              transition: {
+                duration: 0.2,
+                ease: [0.32, 0.72, 0, 1],
+              },
             }}
           >
             <motion.span
@@ -168,14 +173,18 @@ const DynamicCursor: React.FC<DynamicCursorProps> = ({
                 }
               }}
               exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.1 } }}
-              className="font-geist text-sm font-medium mx-3 my-1"
+              className="flex flex-row gap-1 items-center justify-center font-geist text-sm font-medium ml-[8px] mr-[4px] my-[3px] whitespace-nowrap"
             >
-              Link
+              Open
+              <LucideIcon
+                name="Plus"
+                className="size-4 text-white/90 ease-in-out"
+              />
             </motion.span>
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   )
 }
 

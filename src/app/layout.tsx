@@ -51,7 +51,7 @@ export default function RootLayout({
       >
         <CursorProvider>
           <DynamicCursor
-            size={24} // 커서 크기 설정
+            size={28} // 커서 크기 설정
             fillColor="white" // SVG의 fill 색상 설정
           />
           <div className="pointer-events-none fixed left-0 top-0 z-50 h-16 w-full bg-neutral-100 to-transparent backdrop-blur-xl [-webkit-mask-image:linear-gradient(to_bottom,black,transparent)] dark:bg-neutral-900"></div>
