@@ -19,7 +19,7 @@ export default function Home() {
 
   return (
     <motion.div
-      className="mx-auto w-full flex flex-col lg:flex-row p-6 lg:p-8 relative h-screen bg-gray-100 overflow-hidden"
+      className="mx-auto w-full flex flex-col md:flex-row p-6 lg:p-8 relative h-screen bg-gray-100 overflow-hidden"
       variants={containerVariants}
       initial="initial"
       animate="animate"
@@ -104,8 +104,6 @@ export default function Home() {
             </motion.div>
           </div>
         </motion.div>
-
-        <InteractiveElements />
 
         <motion.div variants={childVariants}>
           <h3 className="font-geist font-medium text-neutral-600 text-md mb-3">Connect</h3>
