@@ -22,6 +22,7 @@ const cursorConfigs: Record<string, CursorConfig> = {
   zoomIn: { text: '', icon: '', path: cursorPaths.zoomIn, showChip: false },
   zoomOut: { text: '', icon: '', path: cursorPaths.zoomOut, showChip: false },
   link: { text: 'Open', icon: 'ArrowUpRight', path: cursorPaths.arrow, showChip: true },
+  more: { text: 'More', icon: 'Plus', path: cursorPaths.arrow, showChip: true },
 }
 
 type CursorOption = keyof typeof cursorConfigs
@@ -56,20 +57,23 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
     }
   }, [cursorConfig])
 
+  const easeOutQuad = (t: number) => t * (2 - t)
+
   const animatePath = useCallback(() => {
     if (currentPath === nextPath) return
 
     const interpolatePath = interpolate(currentPath, nextPath, { maxSegmentLength: 2 })
-    const duration = 10
+    const duration = 100
     const start = performance.now()
 
     const animate = (time: number) => {
       const elapsed = time - start
-      const progress = Math.min(elapsed / duration, 1)
-      const newPath = interpolatePath(progress)
+      const linearProgress = Math.min(elapsed / duration, 1)
+      const easedProgress = easeOutQuad(linearProgress) // Ease Out Quad 적용
+      const newPath = interpolatePath(easedProgress)
       setCurrentPath(newPath)
 
-      if (progress < 1) {
+      if (linearProgress < 1) {
         animationRef.current = requestAnimationFrame(animate)
       }
     }
@@ -81,7 +85,8 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [currentPath, nextPath])
+  }, [nextPath])
+
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const x = e.clientX
@@ -129,13 +134,15 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
   return (
     <div
       ref={cursorWrapperRef}
-      className="pointer-events-none overflow-visible fixed top-0 left-0 z-50 flex items-center justify-center will-change-transform rounded-full backdrop-blur-sm transition-[width,height,border-radius,background-color,backdrop-filter] duration-350 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+      className="pointer-events-none overflow-visible fixed top-0 left-0 z-50 flex items-center justify-center will-change-transform rounded-full backdrop-blur-md transition-[width,height,border-radius,background-color,backdrop-filter] duration-350 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
       style={{
+        border: showChip ? "1px rgba(255, 255, 255, .6)" : "none",
         '--cursor-width': showChip ? '80px' : '12px',
         '--cursor-height': showChip ? '32px' : '12px',
         width: 'var(--cursor-width)',
         height: 'var(--cursor-height)',
         backgroundColor: showChip ? 'rgba(38, 38, 38, 0.5)' : 'rgba(38, 38, 38, 0)',
+        transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
       } as React.CSSProperties}
     >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -150,7 +157,7 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
               opacity: 1,
               transform: 'rotate(-15deg)',
             }}
-            stroke="white"
+            stroke="rgb(255 255 255 / 0.7)"
             strokeWidth="0.35"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -159,7 +166,7 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
             <path
               ref={pathRef}
               d={currentPath}
-              fill="rgb(38 38 38 / 0.9)"
+              fill="rgb(38 38 38 / 0.7)"
               fillRule="evenodd"
               clipRule="evenodd"
             />

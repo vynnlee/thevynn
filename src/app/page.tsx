@@ -80,19 +80,11 @@ export default function Home() {
               dragElastic={0.05} // Slightly elastic drag effect
               whileTap={{ cursor: "grabbing" }}
               style={{ cursor: 'grab' }} // Ensures the cursor changes on hover
-              onMouseEnter={() => setCursorOption('grab')}
-              onMouseLeave={() => setCursorOption('arrow')}
             >
               <ProjectCard
                 title="OpenTypo"
                 date="241024"
                 thumbnailUrl="/images/logo_opentypo.svg"
-                link="/"
-              />
-              <ProjectCard
-                title="ZeroShot"
-                date="250101"
-                thumbnailUrl="/images/logo_zeroshot.svg"
                 link="/"
               />
               <ProjectCard

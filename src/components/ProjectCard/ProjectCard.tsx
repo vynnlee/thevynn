@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
+import { useCursor } from '@/contexts/CursorContext';
 
 interface ProjectCardProps {
   title: string;
@@ -16,6 +17,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   thumbnailUrl,
   link,
 }) => {
+  const { setCursorOption } = useCursor();
+
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
 
@@ -29,16 +32,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   };
 
-  // Reset the image position when mouse leaves
-  const handleMouseLeave = () => {
-    setMousePos({ x: 0, y: 0 });
-  };
+  const handleMouseEnter = () => {
+    setCursorOption('more')
+  }
+
+  const handleMouseLeave = (event: React.MouseEvent) => {
+    setCursorOption('arrow')
+  }
 
   return (
     <div
       className="group flex flex-col p-1 bg-white backdrop-blur-xl rounded-xl border border-neutral-200"
-      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onMouseMove={handleMouseMove}
     >
       <div
         className="size-[8rem] flex items-center justify-center rounded-md bg-neutral-100/80 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] relative pointer-events-none overflow-hidden"
