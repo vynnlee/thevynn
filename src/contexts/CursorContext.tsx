@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 
 type CursorOption = 'arrow' | 'grab' | 'move' | 'pointer' | 'zoomIn' | 'zoomOut' | 'link' | 'more'

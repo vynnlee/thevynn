@@ -1,0 +1,24 @@
+{showContextMenu && (
+        <div
+          className="fixed min-w-[120px] z-50 p-1  bg-neutral-900/40 backdrop-blur-md rounded-2xl"
+          style={{
+            top: contextMenuPosition.y,
+            left: contextMenuPosition.x,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <ul className="overflow-hidden rounded-xl flex flex-col gap-[2px]">
+            {menuOptions.map((option, index) => (
+              <li
+                key={option}
+                className={`flex flex-row items-center transition-all duration-300 px-4 py-1.5 font-geist text-white/90 text-sm font-regular bg-neutral-900/400 ${index === selectedIndex ? "bg-white/20" : ""
+                  }`}
+              >
+                {option}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+

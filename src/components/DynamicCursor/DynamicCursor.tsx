@@ -136,7 +136,7 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
       ref={cursorWrapperRef}
       className="pointer-events-none overflow-visible fixed top-0 left-0 z-50 flex items-center justify-center will-change-transform rounded-full backdrop-blur-md transition-[width,height,border-radius,background-color,backdrop-filter] duration-350 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
       style={{
-        border: showChip ? "1px rgba(255, 255, 255, .6)" : "none",
+        border: showChip ? "1px rgba(255, 255, 255, .6)" : "0px rgba(255, 255, 255, 0)",
         '--cursor-width': showChip ? '80px' : '12px',
         '--cursor-height': showChip ? '32px' : '12px',
         width: 'var(--cursor-width)',
