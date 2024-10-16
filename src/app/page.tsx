@@ -19,7 +19,7 @@ export default function Home() {
 
   return (
     <motion.div
-      className="overflow-y-scroll mx-auto w-full flex flex-col md:flex-row p-6 lg:p-8 relative min-h-screen bg-gray-100"
+      className="overflow-y-scroll mx-auto w-full flex flex-col md:flex-row p-6 lg:p-8 relative min-h-screen bg-white"
       variants={containerVariants}
       initial="initial"
       animate="animate"
@@ -140,39 +140,36 @@ export default function Home() {
           <ChatBubble label="Frantz" message="Hey there! What's up" isSender={true} />
         </motion.div> */}
       </div>
-      <div className="w-full min-h-[640px] mt-6 md:mt-0">
+
+      <div className="w-full min-h-[640px] mt-6 md:mt-0 relative">
         <CardProvider>
           <DraggableCard
             title="MDR Golf"
             date="230107"
             thumbnailUrl="/images/thumbnails/portfolio-mdr.png"
             link="/"
-            initialPosition={{ x: 90, y: 20 }}
-            rotation={-10}
+
           />
           <DraggableCard
             title="Metaverse"
             date="240216"
             thumbnailUrl="/images/thumbnails/portfolio-meta.png"
             link="/"
-            initialPosition={{ x: 90, y: 20 }}
-            rotation={-5}
+
           />
           <DraggableCard
             title="LCD Display"
             date="230523"
             thumbnailUrl="/images/thumbnails/portfolio-purespace.png"
             link="/"
-            initialPosition={{ x: 90, y: 20 }}
-            rotation={5}
+
           />
           <DraggableCard
             title="BetaProduct"
             date="240801"
             thumbnailUrl="/images/thumbnails/portfolio-beta.png"
             link="/"
-            initialPosition={{ x: 90, y: 20 }}
-            rotation={0}
+
           />
         </CardProvider>
       </div>

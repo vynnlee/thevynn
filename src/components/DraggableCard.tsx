@@ -1,148 +1,227 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useContext, useCallback } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useContext,
+  useCallback,
+} from 'react';
 import { useCursor } from '@/contexts/CursorContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { CardContext } from '@/contexts/CardContext';
 import { LucideIcon } from '@/lib/lucide-icon';
 
+// 상수 정의
+const ELASTICITY = 0.2;
+const MAX_ELASTIC_DISTANCE = 200;
+const INITIAL_ROTATION_RANGE = 15; // ±15도
+
+// 드래그 가능한 카드의 Props 인터페이스
 interface DraggableCardProps {
   title: string;
   date: string;
   thumbnailUrl: string;
   link: string;
-  rotation?: number;
-  initialPosition?: { x: number; y: number };
 }
 
-export default function ElasticDraggableCard({
+const DraggableCard: React.FC<DraggableCardProps> = ({
   title,
   date,
   thumbnailUrl,
   link,
-  rotation = 0,
-  initialPosition = { x: 100, y: 100 },
-}: DraggableCardProps) {
+}) => {
+  // 컨텍스트 및 훅 초기화
   const { setCursorOption } = useCursor();
-  const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState(initialPosition);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [currentZIndex, setCurrentZIndex] = useState(1);
-  const requestRef = useRef<number | null>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const { bringToFront } = useContext(CardContext);
+  const router = useRouter();
 
+  // 상태 관리
+  const [isDragging, setIsDragging] = useState(false);
+  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState<number>(0);
+  const [isHovering, setIsHovering] = useState(false);
+  const [zIndex, setZIndex] = useState(1);
+  const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // 레퍼런스 초기화
+  const cardRef = useRef<HTMLDivElement>(null);
   const parentRef = useRef<HTMLElement | null>(null);
-  const [parentBounds, setParentBounds] = useState<DOMRect | null>(null);
-  const [cardBounds, setCardBounds] = useState<DOMRect | null>(null);
+  const parentBounds = useRef<DOMRect | null>(null);
+  const cardBounds = useRef<DOMRect | null>(null);
+  const requestRef = useRef<number | null>(null);
 
-  // Elastic clamping constants
-  const ELASTICITY = 0.2;
-  const MAX_ELASTIC_DISTANCE = 200;
-
-  useEffect(() => {
+  /**
+   * 초기 위치와 회전을 설정하는 함수
+   */
+  const initializePosition = useCallback(() => {
     if (cardRef.current && cardRef.current.parentElement) {
       parentRef.current = cardRef.current.parentElement;
-      setParentBounds(parentRef.current.getBoundingClientRect());
-      setCardBounds(cardRef.current.getBoundingClientRect());
-    }
+      parentBounds.current = parentRef.current.getBoundingClientRect();
+      cardBounds.current = cardRef.current.getBoundingClientRect();
 
-    const handleResize = () => {
-      if (parentRef.current) {
-        setParentBounds(parentRef.current.getBoundingClientRect());
-      }
-      if (cardRef.current) {
-        setCardBounds(cardRef.current.getBoundingClientRect());
-      }
-    };
+      const { width: parentWidth, height: parentHeight } = parentBounds.current;
+      const { width: cardWidth, height: cardHeight } = cardBounds.current;
+
+      const maxX = parentWidth - cardWidth;
+      const maxY = parentHeight - cardHeight;
+
+      const randomX = Math.random() * maxX;
+      const randomY = Math.random() * maxY;
+
+      setPosition({ x: randomX, y: randomY });
+
+      // 랜덤 회전 각도 설정 (-15도에서 +15도)
+      const randomRotation =
+        Math.random() * (2 * INITIAL_ROTATION_RANGE) - INITIAL_ROTATION_RANGE;
+      setRotation(randomRotation);
+    }
+  }, []);
+
+  /**
+   * 리사이즈 시 부모 및 카드의 경계를 업데이트하는 함수
+   */
+  const handleResize = useCallback(() => {
+    if (parentRef.current && cardRef.current) {
+      parentBounds.current = parentRef.current.getBoundingClientRect();
+      cardBounds.current = cardRef.current.getBoundingClientRect();
+    }
+  }, []);
+
+  // 초기화 및 리사이즈 이벤트 등록
+  useEffect(() => {
+    initializePosition();
 
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [initializePosition, handleResize]);
 
-  const activateCard = useCallback(() => {
+  /**
+   * zIndex를 업데이트하여 카드를 최상위로 가져오는 함수
+   */
+  const bringCardToFront = useCallback(() => {
     const newZIndex = bringToFront();
-    setCurrentZIndex(newZIndex);
+    setZIndex(newZIndex);
   }, [bringToFront]);
 
-  const elasticClamp = (value: number, min: number, max: number): number => {
-    if (value < min) {
-      const delta = min - value;
-      return min - Math.min(delta * ELASTICITY, MAX_ELASTIC_DISTANCE);
-    }
-    if (value > max) {
-      const delta = value - max;
-      return max + Math.min(delta * ELASTICITY, MAX_ELASTIC_DISTANCE);
-    }
-    return value;
-  };
+  /**
+   * 위치 값을 탄성적으로 제한하는 함수
+   */
+  const elasticClamp = useCallback(
+    (value: number, min: number, max: number): number => {
+      if (value < min) {
+        const delta = min - value;
+        return min - Math.min(delta * ELASTICITY, MAX_ELASTIC_DISTANCE);
+      }
+      if (value > max) {
+        const delta = value - max;
+        return max + Math.min(delta * ELASTICITY, MAX_ELASTIC_DISTANCE);
+      }
+      return value;
+    },
+    []
+  );
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      activateCard();
+  /**
+   * 애니메이션 함수 - 위치를 목표 지점으로 부드럽게 이동
+   */
+  const animateToPosition = useCallback(
+    (
+      targetX: number,
+      targetY: number,
+      duration = 300,
+      easingFunction = (t: number) => 1 - Math.pow(1 - t, 3) // easeOutCubic
+    ) => {
+      const startX = position.x;
+      const startY = position.y;
+      const startTime = performance.now();
+
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easingFunction(progress);
+
+        const newX = startX + (targetX - startX) * easedProgress;
+        const newY = startY + (targetY - startY) * easedProgress;
+
+        setPosition({ x: newX, y: newY });
+
+        if (progress < 1) {
+          requestRef.current = requestAnimationFrame(animate);
+        }
+      };
+
+      requestRef.current = requestAnimationFrame(animate);
+    },
+    [position.x, position.y]
+  );
+
+  /**
+   * 드래그 시작 핸들러
+   */
+  const handleDragStart = useCallback(
+    (clientX: number, clientY: number) => {
+      bringCardToFront();
       setIsDragging(true);
 
       if (parentRef.current) {
         const parentRect = parentRef.current.getBoundingClientRect();
-        const mouseX = e.clientX - parentRect.left;
-        const mouseY = e.clientY - parentRect.top;
-
         setOffset({
-          x: mouseX - position.x,
-          y: mouseY - position.y,
+          x: clientX - parentRect.left - position.x,
+          y: clientY - parentRect.top - position.y,
         });
       }
     },
-    [activateCard, position.x, position.y],
+    [bringCardToFront, position.x, position.y]
   );
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (isDragging && parentBounds && cardBounds) {
+  /**
+   * 드래그 이동 핸들러
+   */
+  const handleDrag = useCallback(
+    (clientX: number, clientY: number) => {
+      if (isDragging && parentBounds.current && cardBounds.current) {
         if (requestRef.current) {
           cancelAnimationFrame(requestRef.current);
         }
 
         requestRef.current = requestAnimationFrame(() => {
           const parentRect = parentRef.current!.getBoundingClientRect();
-          let newX = e.clientX - parentRect.left - offset.x;
-          let newY = e.clientY - parentRect.top - offset.y;
+          let newX = clientX - parentRect.left - offset.x;
+          let newY = clientY - parentRect.top - offset.y;
 
           const minX = 0;
           const minY = 0;
-          const maxX = parentBounds.width - cardBounds.width;
-          const maxY = parentBounds.height - cardBounds.height;
+          const maxX = parentBounds.current.width - cardBounds.current.width;
+          const maxY = parentBounds.current.height - cardBounds.current.height;
 
           newX = elasticClamp(newX, minX, maxX);
           newY = elasticClamp(newY, minY, maxY);
 
-          setPosition({
-            x: newX,
-            y: newY,
-          });
+          setPosition({ x: newX, y: newY });
         });
       }
     },
-    [isDragging, offset.x, offset.y, parentBounds, cardBounds],
+    [isDragging, offset.x, offset.y, elasticClamp]
   );
 
-  const handleMouseUp = useCallback(() => {
+  /**
+   * 드래그 종료 핸들러
+   */
+  const handleDragEnd = useCallback(() => {
     setIsDragging(false);
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
     }
 
-    // Animate back to within bounds if outside
-    if (parentBounds && cardBounds) {
+    if (parentBounds.current && cardBounds.current) {
       const minX = 0;
       const minY = 0;
-      const maxX = parentBounds.width - cardBounds.width;
-      const maxY = parentBounds.height - cardBounds.height;
+      const maxX = parentBounds.current.width - cardBounds.current.width;
+      const maxY = parentBounds.current.height - cardBounds.current.height;
 
       const targetX = Math.max(minX, Math.min(maxX, position.x));
       const targetY = Math.max(minY, Math.min(maxY, position.y));
@@ -151,114 +230,88 @@ export default function ElasticDraggableCard({
         animateToPosition(targetX, targetY);
       }
     }
-  }, [parentBounds, cardBounds, position.x, position.y]);
+  }, [position.x, position.y, animateToPosition]);
 
-  const animateToPosition = (targetX: number, targetY: number, duration = 60, easingFunction = easeOutCubic) => {
-    const startX = position.x;
-    const startY = position.y;
-    const startTime = performance.now();
+  /**
+   * 공통 드래그 시작 이벤트 핸들러 (마우스 및 터치)
+   */
+  const onDragStart = useCallback(
+    (clientX: number, clientY: number) => {
+      handleDragStart(clientX, clientY);
+    },
+    [handleDragStart]
+  );
 
-    const animate = (currentTime: number) => {
-      const elapsedTime = currentTime - startTime;
-      const progress = Math.min(elapsedTime / duration, 1); // progress: 0 to 1
-      const easeProgress = easeOutCubic(progress); // Use provided easing function
+  /**
+   * 공통 드래그 이동 이벤트 핸들러 (마우스 및 터치)
+   */
+  const onDragMove = useCallback(
+    (clientX: number, clientY: number) => {
+      handleDrag(clientX, clientY);
+    },
+    [handleDrag]
+  );
 
-      const newX = startX + (targetX - startX) * easeProgress;
-      const newY = startY + (targetY - startY) * easeProgress;
+  /**
+   * 공통 드래그 종료 이벤트 핸들러 (마우스 및 터치)
+   */
+  const onDragEnd = useCallback(() => {
+    handleDragEnd();
+  }, [handleDragEnd]);
 
-      setPosition({ x: newX, y: newY });
+  /**
+   * 마우스 이벤트 핸들러
+   */
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      onDragStart(e.clientX, e.clientY);
+    },
+    [onDragStart]
+  );
 
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      onDragMove(e.clientX, e.clientY);
+    },
+    [onDragMove]
+  );
 
-    requestAnimationFrame(animate);
-  };
+  const handleMouseUp = useCallback(() => {
+    onDragEnd();
+  }, [onDragEnd]);
 
-  const easeOutCubic = (t: number): number => {
-  return 1 - Math.pow(1 - t, 3); // Smooth ease out
-};
-
-const easeInOutQuad = (t: number): number => {
-  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // Ease in-out for smoother transition
-};
-
-const easeOutElastic = (t: number): number => {
-  const c4 = (2 * Math.PI) / 3;
-
-  return t === 0
-    ? 0
-    : t === 1
-    ? 1
-    : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1; // Elastic effect
-};
-
-  // Touch event handlers (similar modifications as mouse events)
+  /**
+   * 터치 이벤트 핸들러
+   */
   const handleTouchStart = useCallback(
     (e: React.TouchEvent<HTMLDivElement>) => {
-      activateCard();
       const touch = e.touches[0];
-      setIsDragging(true);
-
-      if (parentRef.current) {
-        const parentRect = parentRef.current.getBoundingClientRect();
-        const touchX = touch.clientX - parentRect.left;
-        const touchY = touch.clientY - parentRect.top;
-
-        setOffset({
-          x: touchX - position.x,
-          y: touchY - position.y,
-        });
-      }
-
+      onDragStart(touch.clientX, touch.clientY);
       e.preventDefault();
     },
-    [activateCard, position.x, position.y],
+    [onDragStart]
   );
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
-      if (isDragging && parentBounds && cardBounds) {
-        e.preventDefault();
-
-        if (requestRef.current) {
-          cancelAnimationFrame(requestRef.current);
-        }
-
-        requestRef.current = requestAnimationFrame(() => {
-          const touch = e.touches[0];
-          const parentRect = parentRef.current!.getBoundingClientRect();
-          let newX = touch.clientX - parentRect.left - offset.x;
-          let newY = touch.clientY - parentRect.top - offset.y;
-
-          const minX = 0;
-          const minY = 0;
-          const maxX = parentBounds.width - cardBounds.width;
-          const maxY = parentBounds.height - cardBounds.height;
-
-          newX = elasticClamp(newX, minX, maxX);
-          newY = elasticClamp(newY, minY, maxY);
-
-          setPosition({
-            x: newX,
-            y: newY,
-          });
-        });
-      }
+      const touch = e.touches[0];
+      onDragMove(touch.clientX, touch.clientY);
     },
-    [isDragging, offset.x, offset.y, parentBounds, cardBounds],
+    [onDragMove]
   );
 
-  const handleTouchEnd = handleMouseUp;
+  const handleTouchEnd = useCallback(() => {
+    onDragEnd();
+  }, [onDragEnd]);
 
+  /**
+   * 이벤트 리스너 등록 및 해제
+   */
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('touchmove', handleTouchMove, {
-        passive: false,
-      });
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
       document.addEventListener('touchend', handleTouchEnd);
     } else {
       document.removeEventListener('mousemove', handleMouseMove);
@@ -275,12 +328,23 @@ const easeOutElastic = (t: number): number => {
     };
   }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
+  /**
+   * 클릭 핸들러 - 리플 효과 및 페이지 이동
+   */
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isDragging) return; // 드래그 중 클릭 방지
+
+      // 리플 효과 생성
       const ripple = document.createElement('span');
-      const size = Math.max(e.currentTarget.clientWidth, e.currentTarget.clientHeight);
-      const left = e.clientX - e.currentTarget.getBoundingClientRect().left - size / 2;
-      const top = e.clientY - e.currentTarget.getBoundingClientRect().top - size / 2;
+      const size = Math.max(
+        e.currentTarget.clientWidth,
+        e.currentTarget.clientHeight
+      );
+      const left =
+        e.clientX - e.currentTarget.getBoundingClientRect().left - size / 2;
+      const top =
+        e.clientY - e.currentTarget.getBoundingClientRect().top - size / 2;
 
       ripple.style.width = ripple.style.height = `${size}px`;
       ripple.style.left = `${left}px`;
@@ -290,15 +354,29 @@ const easeOutElastic = (t: number): number => {
       const card = e.currentTarget;
       card.appendChild(ripple);
 
+      // 리플 효과 제거
       setTimeout(() => {
         ripple.remove();
       }, 600);
 
+      // 페이지 이동
       setTimeout(() => {
         router.push(link);
       }, 300);
     },
-    [router, link],
+    [router, link, isDragging]
+  );
+
+  /**
+   * 키보드 이벤트 핸들러 (Enter 키로 클릭)
+   */
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter') {
+        handleClick(e as any);
+      }
+    },
+    [handleClick]
   );
 
   return (
@@ -315,7 +393,7 @@ const easeOutElastic = (t: number): number => {
           : isHovering
             ? '0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.075)'
             : '0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05)',
-        zIndex: currentZIndex,
+        zIndex: zIndex,
         cursor: isDragging ? 'grabbing' : 'grab',
         position: 'absolute',
         touchAction: 'none',
@@ -325,38 +403,45 @@ const easeOutElastic = (t: number): number => {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onTouchStart={handleTouchStart}
-      onKeyDown={e => {
-        if (e.key === 'Enter') handleClick(e as any);
-      }}
+      onKeyDown={handleKeyDown}
       onClick={handleClick}
       tabIndex={0}
       role="button"
       aria-pressed={isDragging}
     >
-      <div className="group flex flex-col p-1 bg-neutral-900/25 backdrop-blur-xl rounded-xl border border-white/15 cursor-move select-none relative overflow-hidden transition-transform duration-200" onMouseEnter={() => setCursorOption('grab')}
-        onMouseLeave={() => setCursorOption('arrow')}>
+      <div
+        className="group flex flex-col p-1 bg-neutral-900/25 backdrop-blur-xl rounded-xl border border-white/15 cursor-move select-none relative overflow-hidden transition-transform duration-200"
+        onMouseEnter={() => setCursorOption('grab')}
+        onMouseLeave={() => setCursorOption('arrow')}
+      >
         <div className="flex flex-row items-center gap-2 px-1 pb-1 justify-between">
           <div className="flex flex-row gap-1 items-center">
-            <p className="font-geist font-regular text-xs text-white/90 tracking-wide">{title}</p>
+            <p className="font-geist font-regular text-xs text-white/90 tracking-wide">
+              {title}
+            </p>
             <LucideIcon
               name="ArrowRight"
               className="size-3 text-white group-hover:translate-x-1 transition-all duration-200 ease-in-out"
             />
           </div>
-          <p className="font-geistMono font-regular text-xs text-white/50 tracking-wide">{date}</p>
+          <p className="font-geistMono font-regular text-xs text-white/50 tracking-wide">
+            {date}
+          </p>
         </div>
         <div className="w-[192px] h-[256px] rounded-md bg-white/15 relative pointer-events-none overflow-hidden">
           <Image
             src={thumbnailUrl}
             alt={`${title} thumbnail`}
-            layout="fill"
-            objectFit="cover"
+            fill
+            style={{ objectFit: 'cover' }}
             quality={75}
-            priority={true}
+            priority
             className="pointer-events-none"
           />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default DraggableCard;
