@@ -19,7 +19,7 @@ export default function Home() {
 
   return (
     <motion.div
-      className="mx-auto w-full flex flex-col md:flex-row p-6 lg:p-8 relative h-screen bg-gray-100 overflow-hidden"
+      className="overflow-y-scroll mx-auto w-full flex flex-col md:flex-row p-6 lg:p-8 relative min-h-screen bg-gray-100"
       variants={containerVariants}
       initial="initial"
       animate="animate"
@@ -37,7 +37,7 @@ export default function Home() {
             className="size-14 rounded-full bg-neutral-400"
           />
           <div className="flex flex-col">
-            <p className="font-geistMono font-bold text-sm">Seongbeen Lee</p>
+            <p className="font-geistMono font-bold text-sm">Vynn Lee</p>
             <p className="font-geist font-regular text-sm">Design is cool, I guess.</p>
           </div>
         </motion.div>
@@ -140,7 +140,7 @@ export default function Home() {
           <ChatBubble label="Frantz" message="Hey there! What's up" isSender={true} />
         </motion.div> */}
       </div>
-      <div className="flex-1">
+      <div className="w-full min-h-[640px] mt-6 md:mt-0">
         <CardProvider>
           <DraggableCard
             title="MDR Golf"

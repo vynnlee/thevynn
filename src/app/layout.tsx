@@ -1,16 +1,11 @@
 import localFont from 'next/font/local';
 import './globals.css';
 import { Metadata } from 'next';
-
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { headers } from 'next/headers';
 
 import TransitionWrapper from '@/components/TransitionWrapper';
 import DynamicCursor from '../components/DynamicCursor/DynamicCursor';
 import { CursorProvider } from '../contexts/CursorContext';
-import { easeCubicInOut } from '@/utils/easing';
-
 import Dock from '@/components/Dock/Dock';
 
 const geistSans = localFont({
@@ -48,21 +43,30 @@ export const metadata: Metadata = {
   },
 };
 
+function isMobileDevice(userAgent: string): boolean {
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(userAgent);
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const userAgent = headers().get('user-agent') || '';
+  const isMobile = isMobileDevice(userAgent);
+
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} overflow-hidden antialiased bg-white dark:bg-neutral-900`}
+        className={`${geistSans.variable} ${geistMono.variable} overflow-y-scroll md:overflow-hidden antialiased bg-white dark:bg-neutral-900`}
       >
         <CursorProvider>
-          <DynamicCursor
-            size={28} // 커서 크기 설정
-            fillColor="white" // SVG의 fill 색상 설정
-          />
+          {!isMobile && (
+            <DynamicCursor
+              size={28} // 커서 크기 설정
+              fillColor="white" // SVG의 fill 색상 설정
+            />
+          )}
           <div className="pointer-events-none fixed left-0 top-0 z-50 h-16 w-full bg-neutral-100 to-transparent backdrop-blur-xl [-webkit-mask-image:linear-gradient(to_bottom,black,transparent)] dark:bg-neutral-900"></div>
           <TransitionWrapper>
             {children}

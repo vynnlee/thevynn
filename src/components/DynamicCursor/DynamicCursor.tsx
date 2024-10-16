@@ -134,7 +134,7 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
   return (
     <div
       ref={cursorWrapperRef}
-      className="pointer-events-none overflow-visible fixed top-0 left-0 z-50 flex items-center justify-center will-change-transform rounded-full backdrop-blur-md transition-[width,height,border-radius,background-color,backdrop-filter] duration-350 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+      className="pointer-events-none overflow-visible fixed top-0 left-0 z-50 flex items-center justify-center will-change-transform rounded-full transition-[width,height,border-radius,background-color,backdrop-filter] duration-350 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
       style={{
         border: showChip ? "1px rgba(255, 255, 255, .6)" : "0px rgba(255, 255, 255, 0)",
         '--cursor-width': showChip ? '80px' : '12px',
@@ -142,6 +142,7 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
         width: 'var(--cursor-width)',
         height: 'var(--cursor-height)',
         backgroundColor: showChip ? 'rgba(38, 38, 38, 0.5)' : 'rgba(38, 38, 38, 0)',
+        backdropFilter: showChip ? "blur(10px)" : "blur(0px)",
         transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
       } as React.CSSProperties}
     >
@@ -157,7 +158,7 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
               opacity: 1,
               transform: 'rotate(-15deg)',
             }}
-            stroke="rgb(255 255 255 / 0.7)"
+            stroke="rgb(255 255 255 / 0.8)"
             strokeWidth="0.35"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -166,7 +167,7 @@ const DynamicCursor: React.FC<DynamicCursorProps> = React.memo(({
             <path
               ref={pathRef}
               d={currentPath}
-              fill="rgb(38 38 38 / 0.7)"
+              fill="rgb(38 38 38 / 0.8)"
               fillRule="evenodd"
               clipRule="evenodd"
             />

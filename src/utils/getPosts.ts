@@ -10,12 +10,14 @@ type Post = {
   slug: string;
 };
 
-const postsDirectory = path.join(process.cwd(), "src/content/posts");
-
-// 모든 포스트 데이터를 가져오는 함수
-export function getAllPosts(): Post[] {
+// 모든 포스트 데이터를 가져오는 함수 (카테고리별로)
+export function getAllPosts(category: string): Post[] {
+  const postsDirectory = path.join(
+    process.cwd(),
+    `src/content/posts/${category}`,
+  );
   const fileNames = fs.readdirSync(postsDirectory);
-  const allPosts = fileNames.map((fileName) => {
+  const allPosts = fileNames.map(fileName => {
     const fullPath = path.join(postsDirectory, fileName);
     const fileContents = fs.readFileSync(fullPath, "utf8");
 

@@ -2,7 +2,7 @@ import { getAllPosts } from '@/utils/getPosts';
 import Link from 'next/link';
 
 export default function Lab() {
-  const posts = getAllPosts();
+  const posts = getAllPosts("lab");
 
   return (
     <main className="mx-auto w-full max-w-screen-sm flex-1 p-8 pt-16 relative h-screen bg-white overflow-hidden">

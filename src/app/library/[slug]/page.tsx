@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { LucideIcon } from '@/lib/lucide-icon';
 
 // 하드코딩된 카테고리별로 포스트 디렉토리 경로 설정
-const category = 'lab'; // 'lab' 카테고리를 하드코딩
+const category = 'library'; // 'lab' 카테고리를 하드코딩
 
 function getPostsDirectory() {
   return path.join(process.cwd(), `src/content/posts/${category}`);

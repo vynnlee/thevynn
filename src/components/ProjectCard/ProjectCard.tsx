@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useCursor } from '@/contexts/CursorContext';
 
 interface ProjectCardProps {
@@ -33,12 +33,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   const handleMouseEnter = () => {
-    setCursorOption('more')
-  }
+    setCursorOption('more');
+  };
 
-  const handleMouseLeave = (event: React.MouseEvent) => {
-    setCursorOption('arrow')
-  }
+  const handleMouseLeave = () => {
+    setCursorOption('arrow');
+    // Reset the position of the image when mouse leaves
+    setMousePos({ x: 0, y: 0 });
+  };
 
   return (
     <div
@@ -62,7 +64,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           className="size-[4rem] pointer-events-none drop-shadow-sm"
           style={{
             transform: `translate(${mousePos.x * 0.075}px, ${mousePos.y * 0.075}px)`, // Image moves based on mouse position
-            transition: 'transform 200ms ease-out', // Smooth transition
+            transition: 'transform 300ms ease-out', // Smooth transition
           }}
         />
       </div>
