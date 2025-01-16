@@ -43,7 +43,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   return (
-    <div
+    <a
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
       className="group flex flex-col p-1 bg-white backdrop-blur-xl rounded-xl border border-neutral-200"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -74,7 +77,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
         <p className="font-geistMono font-regular text-xs text-neutral-400 tracking-wide">{date}</p>
       </div>
-    </div>
+    </a>
   );
 };
 
