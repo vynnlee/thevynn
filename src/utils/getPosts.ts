@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 
-type Post = {
+export type Post = {
   title: string;
   date: string;
   description?: string;
@@ -10,7 +10,6 @@ type Post = {
   slug: string;
 };
 
-// 모든 포스트 데이터를 가져오는 함수 (카테고리별로)
 export function getAllPosts(category: string): Post[] {
   const postsDirectory = path.join(
     process.cwd(),
@@ -23,7 +22,7 @@ export function getAllPosts(category: string): Post[] {
 
     const { data, content } = matter(fileContents);
     return {
-      slug: fileName.replace(/\.(md|mdx)$/, ""), // 확장자 제거
+      slug: fileName.replace(/\.(md|mdx)$/, ""), // Remove file extension
       title: data.title,
       date: data.date,
       description: data.description,
@@ -32,4 +31,9 @@ export function getAllPosts(category: string): Post[] {
   });
 
   return allPosts;
+}
+
+// This function will be used for getStaticProps
+export async function getPostsData(category: string): Promise<Post[]> {
+  return getAllPosts(category);
 }

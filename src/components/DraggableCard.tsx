@@ -23,6 +23,7 @@ interface DraggableCardProps {
   title: string;
   date: string;
   thumbnailUrl: string;
+  fallbackThumbnailUrl: string;
   link: string;
 }
 
@@ -30,8 +31,10 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   title,
   date,
   thumbnailUrl,
+  fallbackThumbnailUrl,
   link,
 }) => {
+  const [imgSrc, setImgSrc] = useState(thumbnailUrl);
   // 컨텍스트 및 훅 초기화
   const { setCursorOption } = useCursor();
   const { bringToFront } = useContext(CardContext);
@@ -183,7 +186,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
    */
   const handleDrag = useCallback(
     (clientX: number, clientY: number) => {
-      if (isDragging && parentBounds.current && cardBounds.current) {
+      if (isDragging && parentBounds.current && cardBounds.current && parentRef.current) {
         if (requestRef.current) {
           cancelAnimationFrame(requestRef.current);
         }
@@ -195,8 +198,8 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
 
           const minX = 0;
           const minY = 0;
-          const maxX = parentBounds.current.width - cardBounds.current.width;
-          const maxY = parentBounds.current.height - cardBounds.current.height;
+          const maxX = parentBounds.current!.width - cardBounds.current!.width;
+          const maxY = parentBounds.current!.height - cardBounds.current!.height;
 
           newX = elasticClamp(newX, minX, maxX);
           newY = elasticClamp(newY, minY, maxY);
@@ -430,13 +433,14 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         </div>
         <div className="w-[192px] h-[256px] rounded-md bg-white/15 relative pointer-events-none overflow-hidden">
           <Image
-            src={thumbnailUrl}
+            src={imgSrc}
             alt={`${title} thumbnail`}
             fill
             style={{ objectFit: 'cover' }}
             quality={75}
             priority
             className="pointer-events-none"
+            onError={() => setImgSrc(fallbackThumbnailUrl)}
           />
         </div>
       </div>
